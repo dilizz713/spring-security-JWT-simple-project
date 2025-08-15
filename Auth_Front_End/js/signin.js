@@ -2,77 +2,7 @@ function togglePassword() {
     const pwd = document.getElementById("password");
     pwd.type = (pwd.type === "password") ? "text" : "password";
 }
-// with local storage
-/*$(document).ready(function () {
-    $("form").on("submit", function (e) {
-        e.preventDefault();
 
-        const username = $("#username").val().trim();
-        const password = $("#password").val();
-
-        if (!username || !password) {
-            alert("Please fill in all fields.");
-            return;
-        }
-
-        $.ajax({
-            url: "http://localhost:8080/auth/login",
-            type: "POST",
-            contentType: "application/json",
-            data: JSON.stringify({ username, password }),
-            success: function (response) {
-                const token = response.accessToken || response.data?.accessToken;
-                const role = response.role || response.data?.role;
-                const name = response.userName || response.data?.userName;
-
-                if (!token || !role || !name) {
-                    alert("Login successful, but missing required data.");
-                    return;
-                }
-
-
-                localStorage.setItem("accessToken", token);
-                localStorage.setItem("username", name);
-                localStorage.setItem("role", role);
-
-                console.log(token);
-                console.log(name);
-                console.log(role);
-
-                alert("Login successful!");
-                window.location.href = "dashboard.html";
-            },
-            error: function (xhr) {
-                let errorMsg = "Login failed. Please try again.";
-
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorMsg = xhr.responseJSON.message;
-                } else if (xhr.responseText) {
-                    try {
-                        const json = JSON.parse(xhr.responseText);
-                        errorMsg = json.message || errorMsg;
-                    } catch (err) {
-
-                    }
-                }
-
-                if (xhr.status === 401 || xhr.status === 403 || errorMsg.toLowerCase().includes("invalid")) {
-                    alert("Username or password incorrect. Please try again.");
-                } else if (xhr.status === 404 || errorMsg.toLowerCase().includes("not found")) {
-                    alert("User not found. Redirecting to signup...");
-                    setTimeout(() => {
-                        window.location.href = "signup.html";
-                    }, 1500);
-                } else {
-                    alert(errorMsg);
-                }
-            }
-        });
-    });
-});*/
-
-
-// with cookies
 $(document).ready(function () {
     $("form").on("submit", function (e) {
         e.preventDefault();
@@ -90,48 +20,33 @@ $(document).ready(function () {
             type: "POST",
             contentType: "application/json",
             data: JSON.stringify({ username, password }),
-            xhrFields: {
-                withCredentials: true
-            },
-            success: function (response) {
-                const role = response.data?.role;
-                const name = response.data?.userName;
+            xhrFields: { withCredentials: true },
+            success: function (res) {
+                const data = res.data || {};
+                const name = data.userName;
+                const role = data.role;
 
-                if (!role || !name) {
+                if (!name || !role) {
                     alert("Login successful, but missing required data.");
                     return;
                 }
 
-                localStorage.setItem("username", name);
-                localStorage.setItem("role", role);
+                sessionStorage.setItem("username", name);
+                sessionStorage.setItem("role", role);
 
-                console.log("User:", name);
-                console.log("Role:", role);
-
-                alert("Login successful!");
                 window.location.href = "dashboard.html";
             },
             error: function (xhr) {
-                let errorMsg = "Login failed. Please try again.";
+                let msg = "Login failed. Please try again.";
+                if (xhr.responseJSON?.message) msg = xhr.responseJSON.message;
 
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorMsg = xhr.responseJSON.message;
-                } else if (xhr.responseText) {
-                    try {
-                        const json = JSON.parse(xhr.responseText);
-                        errorMsg = json.message || errorMsg;
-                    } catch (_) {}
-                }
-
-                if (xhr.status === 401 || xhr.status === 403 || errorMsg.toLowerCase().includes("invalid")) {
+                if (xhr.status === 401 || xhr.status === 403) {
                     alert("Username or password incorrect. Please try again.");
-                } else if (xhr.status === 404 || errorMsg.toLowerCase().includes("not found")) {
+                } else if (xhr.status === 404 || msg.toLowerCase().includes("not found")) {
                     alert("User not found. Redirecting to signup...");
-                    setTimeout(() => {
-                        window.location.href = "signup.html";
-                    }, 1500);
+                    setTimeout(() => location.href = "signup.html", 1200);
                 } else {
-                    alert(errorMsg);
+                    alert(msg);
                 }
             }
         });

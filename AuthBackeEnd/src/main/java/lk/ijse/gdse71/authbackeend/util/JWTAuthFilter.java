@@ -83,13 +83,11 @@ public class JWTAuthFilter extends OncePerRequestFilter {
     }
 
     private String extractToken(HttpServletRequest request) {
-        //  Try Authorization Header
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             return authHeader.substring(7);
         }
 
-        // Try Cookies
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
                 if ("accessToken".equals(cookie.getName())) {
